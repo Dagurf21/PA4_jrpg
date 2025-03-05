@@ -1,0 +1,49 @@
+Character types
+    
+    Warrior – A strong melee fighter with high health and defense.
+        Attack: Slash (basic physical attack)
+        Special: Shield Block (reduces incoming damage for one turn)
+
+    Mage – A glass-cannon spellcaster with high damage but low health.
+        Attack: Fireball (magic attack)
+        Special: Arcane Surge (boosts magic damage for the next turn)
+
+    Rogue – A fast, agile attacker that can deal critical damage.
+        Attack: Dagger Strike (chance for a critical hit)
+        Special: Vanish (dodges one enemy attack)
+
+    Cleric – A healer and support character.
+        Attack: Smite (holy damage, weak attack)
+        Special: Heal (restores health to an ally)
+
+    Beastmaster – Summons creatures to fight alongside.
+        Attack: Whip Strike (melee attack)
+        Special: Summon Wolf (temporary ally that fights for a few turns)
+
+    Elementalist – Controls elements for diverse attacks.
+        Attack: Ice Spike (deals damage and slows enemy)
+        Special: Storm Call (hits multiple enemies)
+
+    Paladin – A hybrid between Warrior and Cleric.
+        Attack: Holy Blade (damage with slight healing)
+        Special: Divine Shield (grants temporary invincibility)
+
+    Dark Knight – Uses dark energy at the cost of health.
+        Attack: Shadow Slash (physical + dark damage)
+        Special: Life Drain (steals health from an enemy)
+
+    Berserker – A reckless attacker that gets stronger when injured.
+        Attack: Frenzied Strike (deals bonus damage when health is low)
+        Special: Blood Rage (boosts attack but lowers defense)
+
+    Gambler – Uses luck-based attacks.
+
+    Attack: Coin Toss (damage varies randomly)
+    Special: Jackpot (big damage if lucky, self-damage if unlucky)
+
+Possible additions to characters
+    More stats : Mana, stamina, speed, resistance
+    More abilities : Multi-target attacks, buffs, debuffs
+    Equipment system ?? : Weapons and armor that modify stats
+    Monster encounters : Unique abilities for different enemies
+
