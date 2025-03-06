@@ -1,7 +1,17 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++11
+CXXFLAGS = -Wall -std=c++11 -I.  # -I. tells the compiler to look in the project root for headers
 
-SRCS = main.cpp Character.cpp Warrior.cpp Mage.cpp
+SRCS = main.cpp Character.cpp \
+       Characters/Beastmaster/Beastmaster.cpp \
+       Characters/Berserker/Berserker.cpp \
+       Characters/Cleric/Cleric.cpp \
+       Characters/DarkKnight/DarkKnight.cpp \
+       Characters/Elementalist/Elementalist.cpp \
+       Characters/Mage/Mage.cpp \
+       Characters/Paladin/Paladin.cpp \
+       Characters/Rogue/Rogue.cpp \
+       Characters/Warrior/Warrior.cpp
+
 OBJS = $(SRCS:.cpp=.o)
 TARGET = jrpg
 
