@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++11 -I.  # -I. tells the compiler to look in the project root for headers
+CXXFLAGS = -Wall -std=c++11 -I.
 
-SRCS = main.cpp Character.cpp \
+SRCS = main.cpp Character.cpp UI.cpp \
        Characters/Beastmaster/Beastmaster.cpp \
        Characters/Berserker/Berserker.cpp \
        Characters/Cleric/Cleric.cpp \

@@ -9,6 +9,7 @@ protected:
     int health;
     int attackPower;
     int defense;
+    bool defending;
 
 public:
     Character(const std::string &name, int health, int attackPower, int defense);
@@ -20,6 +21,9 @@ public:
 
     // pure virtual function so every derived class can implement its own attack 
     virtual void attack(Character &target) = 0;
+
+    // virtual functio for defending
+    virtual void defend();
 
     // applies damage after considering defense
     void takeDamage(int damage);

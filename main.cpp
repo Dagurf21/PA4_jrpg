@@ -8,6 +8,7 @@
 #include "Characters/Rogue/Rogue.h"
 #include "Characters/Warrior/Warrior.h"
 
+#include "UI.h"
 #include <iostream>
 #include <limits>
 #include <ctime>
@@ -34,31 +35,31 @@ Character* chooseCharacter() {
     Character* player = nullptr;
     switch (choice) {
         case 1:
-            player = new Beastmaster("Beastmaster");
+            player = new Beastmaster("Player Beastmaster");
             break;
         case 2:
-            player = new Berserker("Berserker");
+            player = new Berserker("Player Berserker");
             break;
         case 3:
-            player = new Cleric("Cleric");
+            player = new Cleric("Player Cleric");
             break;
         case 4:
-            player = new DarkKnight("Dark Knight");
+            player = new DarkKnight("Player Dark Knight");
             break;
         case 5:
-            player = new Elementalist("Elementalist");
+            player = new Elementalist("Player Elementalist");
             break;
         case 6:
-            player = new Mage("Mage");
+            player = new Mage("Player Mage");
             break;
         case 7:
-            player = new Paladin("Paladin");
+            player = new Paladin("Player Paladin");
             break;
         case 8:
-            player = new Rogue("Rogue");
+            player = new Rogue("Player Rogue");
             break;
         case 9:
-            player = new Warrior("Warrior");
+            player = new Warrior("Player Warrior");
             break;
         default:
             std::cout << "Invalid selection. Defaulting to Warrior. \n";
@@ -109,39 +110,56 @@ Character* randomEnemy() {
 int main() {
     // Seed random number generator
     std::srand(static_cast<unsigned>(std::time(nullptr)));
-
+    
+    UI::clearScreen();
     Character* player = chooseCharacter();
-
     Character* enemy = randomEnemy();
 
+    std::cout << "\nYou chose: " << player -> getName();
+    std::cout << "\nEnemy is: " << enemy -> getName() << "\n";
     std::cout << "Battle Starts! \n";
+    UI::pause(1500); //1.5 sec
 
-    // Simple turn based battle loop
+    const int playerMaxHP = 100;
+    const int enemyMaxHP = 100;
+
     bool playerTurn = true;
     while (player -> isAlive() && enemy -> isAlive()) {
+        UI::clearScreen();
+        UI::drawBattleScene(player->getName(), player->getHealth(), playerMaxHP,
+                            enemy->getName(), enemy->getHealth(), enemyMaxHP);
+
         if (playerTurn) {
             std::cout << "\nYour Turn:\n";
-                player -> attack(*enemy);
+            int action = UI::displayBattleMenu();
+            switch (action) {
+                case 1: // Attack
+                    player -> attack(*enemy);
+                    break;
+                case 2: // Defend
+                    player -> defend();
+                    break;
+                default:
+                    std::cout << "Invalid action default to attack\n";
+                    player -> attack(*enemy);
+                    break;
+            }
         } else {
             std::cout << "\nEnemy turn:\n";
-                enemy -> attack(*player);
+            enemy -> attack(*player);
         }
-
-        std::cout << player -> getName() << " HP: " << player -> getHealth() << "\n";
-        std::cout << enemy -> getName() << " HP: " << enemy -> getHealth() << "\n";
 
         // Announce winner
         if (enemy ->getHealth() <= 0) {
-            std::cout << "\n" << player -> getName() << "wins!\n";
+            std::cout << "\nPlayer " << player -> getName() << " wins!\n";
             break;
         } else if (player -> getHealth() <= 0){
-            std::cout << "\n" << enemy -> getName() << " wins!\n";
+            std::cout << "\nEnemy " << enemy -> getName() << " wins!\n";
             break;
         }
 
         playerTurn = !playerTurn;
-        std::cout << "Press enter to continue...\n";
-        std::cin.ignore();
+        UI::waitForKeyPress();
     }
 
     // Memory cleanup
