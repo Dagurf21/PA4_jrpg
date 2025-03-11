@@ -151,10 +151,10 @@ int main() {
 
         // Announce winner
         if (enemy ->getHealth() <= 0) {
-            std::cout << "\nPlayer " << player -> getName() << " wins!\n";
+            std::cout << player -> getName() << " wins!\n";
             break;
         } else if (player -> getHealth() <= 0){
-            std::cout << "\nEnemy " << enemy -> getName() << " wins!\n";
+            std::cout << enemy -> getName() << " wins!\n";
             break;
         }
 
