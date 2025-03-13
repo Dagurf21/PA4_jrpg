@@ -13,6 +13,9 @@ namespace UI {
     // Display the battle menu and return players choice
     int displayBattleMenu();
 
+    // Display the attack menu and return players choice
+    int chooseAttackMenu(const std::string attackOptions[3]);
+
     // Pauses for given num of milliseconds
     void pause(int milliseconds);
 

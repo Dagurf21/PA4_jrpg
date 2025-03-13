@@ -134,19 +134,19 @@ int main() {
             int action = UI::displayBattleMenu();
             switch (action) {
                 case 1: // Attack
-                    player -> attack(*enemy);
+                    player -> attack(*enemy, playerTurn);
                     break;
                 case 2: // Defend
                     player -> defend();
                     break;
                 default:
                     std::cout << "Invalid action default to attack\n";
-                    player -> attack(*enemy);
+                    player -> attack(*enemy, playerTurn);
                     break;
             }
         } else {
             std::cout << "\nEnemy turn:\n";
-            enemy -> attack(*player);
+            enemy -> attack(*player, playerTurn);
         }
 
         // Announce winner

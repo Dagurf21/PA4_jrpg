@@ -1,6 +1,8 @@
 #include "UI.h"
+#include <ios>
 #include <iostream>
 #include <chrono>
+#include <limits>
 #include <thread>
 #include <cstdlib>
 
@@ -34,6 +36,18 @@ namespace UI {
         std::cout << "4. Flee\n";
         std::cout << "Enter Choice\n";
         std::cin >> choice;
+        return choice;
+    }
+
+    int chooseAttackMenu(const std::string attackOptions[3]) {
+        std::cout << "\nChoose your attack:\n";
+        for (int i = 0; i < 3; i++) {
+            std::cout << (i + 1) << ". " << attackOptions[i] << "\n";
+        }
+        std::cout << "Enter choice: ";
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return choice;
     }
 

@@ -20,7 +20,7 @@ public:
     void setHealth(int hp);
 
     // pure virtual function so every derived class can implement its own attack 
-    virtual void attack(Character &target) = 0;
+    virtual void attack(Character &target, bool isPlayer) = 0;
 
     // virtual functio for defending
     virtual void defend();
