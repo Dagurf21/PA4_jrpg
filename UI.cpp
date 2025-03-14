@@ -32,22 +32,48 @@ namespace UI {
         std::cout << "\nChoose your action:\n";
         std::cout << "1. Attack\n";
         std::cout << "2. Defend\n";
-        std::cout << "3. Use Item\n";
-        std::cout << "4. Flee\n";
         std::cout << "Enter Choice\n";
-        std::cin >> choice;
+        
+        while (true) {
+            if (!(std::cin >> choice)) {
+                std::cout << "Please enter a valid number. \n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                continue;
+            }
+
+            if (choice == 1 || choice == 2) {
+                break;
+            } else {
+                std::cout << "Invalid selection. Please enter 1 or 2.\n";
+            }
+        }
         return choice;
     }
 
     int chooseAttackMenu(const std::string attackOptions[3]) {
+        int choice = 0;
         std::cout << "\nChoose your attack:\n";
+
         for (int i = 0; i < 3; i++) {
             std::cout << (i + 1) << ". " << attackOptions[i] << "\n";
         }
         std::cout << "Enter choice: ";
-        int choice;
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        while (true){
+            if (!(std::cin >> choice)) {
+                std::cout << "Please enter a valid number. \n";
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                continue;
+            }
+
+            if (choice == 1 || choice == 2 || choice == 3) {
+                break;
+            } else {
+                std::cout << "Invalid selection. Please enter 1, 2, or 3.\n";
+            }
+        } 
         return choice;
     }
 

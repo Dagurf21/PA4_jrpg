@@ -1,0 +1,2382 @@
+// ./Makefile
+CXX = g++
+CXXFLAGS = -Wall -std=c++11 -I.
+
+SRCS = main.cpp Character.cpp UI.cpp \
+       Characters/Beastmaster/Beastmaster.cpp \
+       Characters/Berserker/Berserker.cpp \
+       Characters/Cleric/Cleric.cpp \
+       Characters/DarkKnight/DarkKnight.cpp \
+       Characters/Elementalist/Elementalist.cpp \
+       Characters/Mage/Mage.cpp \
+       Characters/Paladin/Paladin.cpp \
+       Characters/Rogue/Rogue.cpp \
+       Characters/Warrior/Warrior.cpp
+
+OBJS = $(SRCS:.cpp=.o)
+TARGET = jrpg
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+// ./main.cpp
+#include "Characters/Beastmaster/Beastmaster.h"
+#include "Characters/Berserker/Berserker.h"
+#include "Characters/Cleric/Cleric.h"
+#include "Characters/DarkKnight/DarkKnight.h"
+#include "Characters/Elementalist/Elementalist.h"
+#include "Characters/Mage/Mage.h"
+#include "Characters/Paladin/Paladin.h"
+#include "Characters/Rogue/Rogue.h"
+#include "Characters/Warrior/Warrior.h"
+
+#include "UI.h"
+#include <iostream>
+#include <limits>
+#include <ctime>
+#include <cstdlib>
+
+// Let player choose a Character
+Character* chooseCharacter() {
+    int choice = 0;
+    std::cout << "Choose your character:\n";
+    std::cout << "1. Beastmaster\n";
+    std::cout << "2. Berserker\n";
+    std::cout << "3. Cleric\n";
+    std::cout << "4. Dark Knight\n";
+    std::cout << "5. Elementalist\n";
+    std::cout << "6. Mage\n";
+    std::cout << "7. Paladin\n";
+    std::cout << "8. Rogue\n";
+    std::cout << "9. Warrior\n";
+    std::cin >> choice;
+
+    // Clear any leftover input
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    Character* player = nullptr;
+    switch (choice) {
+        case 1:
+            player = new Beastmaster("Player Beastmaster");
+            break;
+        case 2:
+            player = new Berserker("Player Berserker");
+            break;
+        case 3:
+            player = new Cleric("Player Cleric");
+            break;
+        case 4:
+            player = new DarkKnight("Player Dark Knight");
+            break;
+        case 5:
+            player = new Elementalist("Player Elementalist");
+            break;
+        case 6:
+            player = new Mage("Player Mage");
+            break;
+        case 7:
+            player = new Paladin("Player Paladin");
+            break;
+        case 8:
+            player = new Rogue("Player Rogue");
+            break;
+        case 9:
+            player = new Warrior("Player Warrior");
+            break;
+        default:
+            std::cout << "Invalid selection. Defaulting to Warrior. \n";
+            player = new Warrior("Player Warrior");
+            break;
+    }
+    return player;
+}
+
+// Function to randomly choose an enemy character
+Character* randomEnemy() {
+    int choice = std::rand() % 9 + 1; // Generates a number between 1 and 9
+    Character* enemy = nullptr;
+    switch (choice) {
+        case 1:
+            enemy = new Beastmaster("Enemy Beastmaster");
+            break;
+        case 2:
+            enemy = new Berserker("Enemy Berserker");
+            break;
+        case 3:
+            enemy = new Cleric("Enemy Cleric");
+            break;
+        case 4:
+            enemy = new DarkKnight("Enemy Dark Knight");
+            break;
+        case 5:
+            enemy = new Elementalist("Enemy Elementalist");
+            break;
+        case 6:
+            enemy = new Mage("Enemy Mage");
+            break;
+        case 7:
+            enemy = new Paladin("Enemy Paladin");
+            break;
+        case 8:
+            enemy = new Rogue("Enemy Rogue");
+            break;
+        case 9:
+            enemy = new Warrior("Enemy Warrior");
+            break;
+        default:
+            enemy = new Warrior("Enemy Warrior");
+            break;
+    }
+    return enemy;
+}
+
+int main() {
+    // Seed random number generator
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+    
+    UI::clearScreen();
+    Character* player = chooseCharacter();
+    Character* enemy = randomEnemy();
+
+    std::cout << "\nYou chose: " << player -> getName();
+    std::cout << "\nEnemy is: " << enemy -> getName() << "\n";
+    std::cout << "Battle Starts! \n";
+    UI::pause(1500); //1.5 sec
+
+    const int playerMaxHP = player -> getHealth();
+    const int enemyMaxHP = enemy -> getHealth();
+
+    bool playerTurn = true;
+    while (player -> isAlive() && enemy -> isAlive()) {
+        UI::clearScreen();
+        UI::drawBattleScene(player->getName(), player->getHealth(), playerMaxHP,
+                            enemy->getName(), enemy->getHealth(), enemyMaxHP);
+
+        if (playerTurn) {
+            std::cout << "\nYour Turn:\n";
+            int action = UI::displayBattleMenu();
+            switch (action) {
+                case 1: // Attack
+                    player -> attack(*enemy, playerTurn);
+                    break;
+                case 2: // Defend
+                    player -> defend();
+                    break;
+                default:
+                    std::cout << "Invalid action default to attack\n";
+                    player -> attack(*enemy, playerTurn);
+                    break;
+            }
+        } else {
+            std::cout << "\nEnemy turn:\n";
+            enemy -> attack(*player, false);
+        }
+
+        // Announce winner
+        if (enemy ->getHealth() <= 0) {
+            std::cout << player -> getName() << " wins!\n";
+            break;
+        } else if (player -> getHealth() <= 0){
+            std::cout << enemy -> getName() << " wins!\n";
+            break;
+        }
+
+        playerTurn = !playerTurn;
+        UI::waitForKeyPress();
+    }
+
+    // Memory cleanup
+    delete player;
+    delete enemy;
+    return 0;
+}
+
+// ./.gitignore
+combine.py
+
+// ./Character.h
+#ifndef CHARACTER_H
+#define CHARACTER_H
+
+#include <string>
+
+class Character {
+protected:
+    std::string name;
+    int health;
+    int attackPower;
+    int defense;
+    bool defending;
+
+public:
+    Character(const std::string &name, int health, int attackPower, int defense);
+    virtual ~Character();
+
+    std::string getName() const;
+    int getHealth() const;
+    void setHealth(int hp);
+
+    // pure virtual function so every derived class can implement its own attack 
+    virtual void attack(Character &target, bool isPlayer) = 0;
+
+    // virtual functio for defending
+    virtual void defend();
+
+    // applies damage after considering defense
+    void takeDamage(int damage);
+    bool isAlive() const;
+};
+
+#endif 
+
+// ./Attack.h
+#ifndef ATTACK_H
+#define ATTACK_H
+
+#include <string>
+
+struct Attack {
+    std::string name;
+    int damageModifier;
+};
+
+
+#endif // ATTACK_H
+
+// ./Character.cpp
+#include "Character.h"
+#include <iostream>
+#include <algorithm>
+
+Character::Character(const std::string &name, int health, int attackPower, int defense)
+    : name(name), health(health), attackPower(attackPower), defense(defense), defending(false) {}
+
+Character::~Character() {}
+
+std::string Character::getName() const {
+    return name;
+}
+
+int Character::getHealth() const {
+    return health;
+}
+
+void Character::setHealth(int hp) {
+    health = hp;
+}
+
+void Character::defend() {
+    std::cout << "Debug defend() char.cpp";
+    defending = true;
+    std::cout << name << " braces for next attack ! \n";
+}
+
+void Character::takeDamage(int damage) {
+    // calculate effective damage
+    int effectiveDamage = std::max(damage - defense, 0);
+    
+    if (defending) {
+        effectiveDamage /= 2;
+        std::cout << name << " defended! Damage is reduced. \n";
+        defending = false;
+    }
+    health -= effectiveDamage;
+    std::cout << name << " takes " << effectiveDamage << " damage!\n";
+
+    if (health < 0)
+      health = 0;
+}
+
+bool Character::isAlive() const {
+    return health > 0;
+}
+
+// ./UI.h
+#ifndef UI_H
+#define UI_H
+
+#include <string>
+
+namespace UI {
+    // Clear console screen
+    void clearScreen();
+
+    // Display healthbar
+    void printHealthBar(const std::string &name, int currentHP, int maxHP);
+
+    // Display the battle menu and return players choice
+    int displayBattleMenu();
+
+    // Display the attack menu and return players choice
+    int chooseAttackMenu(const std::string attackOptions[3]);
+
+    // Pauses for given num of milliseconds
+    void pause(int milliseconds);
+
+    void drawBattleScene(const std::string &playerName, int playerHP, int playerMaxHP,
+                            const std::string &enemyName, int enemyHP, int enemyMaxHP);
+
+    void waitForKeyPress();
+}
+
+#endif // UI_H
+
+// ./UI.cpp
+#include "UI.h"
+#include <ios>
+#include <iostream>
+#include <chrono>
+#include <limits>
+#include <thread>
+#include <cstdlib>
+
+namespace UI {
+  
+    void clearScreen() {
+      #ifdef _WIN32
+          system("cls");
+      #else 
+        system("clear");
+      #endif
+    }
+
+    void printHealthBar(const std::string &name, int currentHP, int maxHP) {
+        const int barwidth = 20;
+        int filled = (currentHP * barwidth) / maxHP;
+        std::cout << name << " HP: [";
+        for (int i = 0; i < filled; i++)
+          std::cout << "#";
+        for (int i = filled; i < barwidth; i++)
+          std::cout << "-";
+        std::cout << "] " << currentHP << "/" << maxHP << "\n";
+    }
+
+    int displayBattleMenu() {
+        int choice = 0;
+        std::cout << "\nChoose your action:\n";
+        std::cout << "1. Attack\n";
+        std::cout << "2. Defend\n";
+        std::cout << "3. Use Item\n";
+        std::cout << "4. Flee\n";
+        std::cout << "Enter Choice\n";
+        std::cin >> choice;
+        return choice;
+    }
+
+    int chooseAttackMenu(const std::string attackOptions[3]) {
+        std::cout << "\nChoose your attack:\n";
+        for (int i = 0; i < 3; i++) {
+            std::cout << (i + 1) << ". " << attackOptions[i] << "\n";
+        }
+        std::cout << "Enter choice: ";
+        int choice;
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return choice;
+    }
+
+    void pause(int milliseconds) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    }
+   
+    void drawBattleScene(const std::string &playerName, int playerHP, int playerMaxHP,
+                            const std::string &enemyName, int enemyHP, int enemyMaxHP) {
+        clearScreen();
+        std::cout << "==================================================\n";
+        std::cout << "                   BATTLE SCENE                    \n";
+        std::cout << "==================================================\n\n";
+        printHealthBar(playerName, playerHP, playerMaxHP);
+        printHealthBar(enemyName, enemyHP, enemyMaxHP);
+        std::cout << "\n";
+    }
+
+    void waitForKeyPress() {
+        std::cout << "Press Enter to continue...";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
+
+}  // namespace UI
+
+
+// ./combine.py
+#!/usr/bin/env python3
+import os
+
+def combine_files(root_dir, output_file):
+    with open(output_file, "w") as out:
+        # Walk through every file in the directory
+        for subdir, dirs, files in os.walk(root_dir):
+            for file in files:
+                file_path = os.path.join(subdir, file)
+                # Skip the output file itself if it's inside the project directory
+                if os.path.abspath(file_path) == os.path.abspath(output_file):
+                    continue
+
+                # Write a header with the file's path
+                out.write(f"// {file_path}\n")
+                try:
+                    with open(file_path, "r") as f:
+                        content = f.read()
+                    out.write(content)
+                except Exception as e:
+                    # If there's an error reading the file, note it in the output
+                    out.write(f"// Could not read file: {e}\n")
+                # Add an extra newline for clarity between files
+                out.write("\n")
+
+if __name__ == "__main__":
+    # Change '.' to your project directory if needed.
+    root_directory = "."
+    output_filename = "combined_files.txt"
+    combine_files(root_directory, output_filename)
+    print(f"All files have been combined into {output_filename}")
+
+// ./Characters/Elementalist/Elementalist.cpp
+#include "Elementalist.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Elementalist::Elementalist(const std::string &name)
+    : Character(name, 70, 24, 3) {}  // Lower health, high magical attack
+
+void Elementalist::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Flame Burst", "Frost Nova", "Storm Call"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Elementalist/Elementalist.h
+#ifndef ELEMENTALIST_H
+#define ELEMENTALIST_H
+
+#include "../../Character.h"
+#include <string>
+
+class Elementalist : public Character {
+public:
+    Elementalist(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/DarkKnight/DarkKnight.h
+#ifndef DARKKNIGHT_H
+#define DARKKNIGHT_H
+
+#include "../../Character.h"
+#include <string>
+
+class DarkKnight : public Character {
+public:
+    DarkKnight(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/DarkKnight/DarkKnight.cpp
+#include "DarkKnight.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+DarkKnight::DarkKnight(const std::string &name)
+    : Character(name, 85, 22, 6) {}  // Balanced stats with a darker theme
+
+void DarkKnight::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Shadow Slash", "Cursed Strike", "Nigthmare Reaper"};
+        
+    // UI
+    int choice = UI::chooseAttackMenu(attackOptions);
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Mage/Mage.cpp
+#include "Mage.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Mage::Mage(const std::string &name)
+    : Character(name, 70, 25, 3) {} // High attack low health
+
+void Mage::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Fireball", "Arcane Blast", "Mystic Missile"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Mage/Mage.h
+#ifndef MAGE_H
+#define MAGE_H
+
+#include "../../Character.h"
+#include <string>
+
+class Mage : public Character {
+public:
+    Mage(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+
+// ./Characters/Rogue/Rogue.cpp
+#include "Rogue.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Rogue::Rogue(const std::string &name)
+    : Character(name, 75, 20, 4) {}  // Agile attacker with moderate health
+
+void Rogue::attack(Character &target, bool isPlayer) {
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Backstab", "Quick Stab", "Poisoned Dagger"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Rogue/Rogue.h
+#ifndef ROGUE_H
+#define ROGUE_H
+
+#include "../../Character.h"
+#include <string>
+
+class Rogue : public Character {
+public:
+    Rogue(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/Warrior/Warrior.cpp
+#include "Warrior.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Warrior::Warrior(const std::string &name)
+    : Character(name, 100, 20, 5) {} // Stats
+
+void Warrior::attack(Character &target, bool isPlayer) {
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Slash", "Heavy Strike", "Quick Jab"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1: 
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Warrior/Warrior.h
+#ifndef WARRIOR_H
+#define WARRIOR_H
+
+#include "../../Character.h"
+#include <string>
+
+
+class Warrior : public Character {
+public:
+    Warrior(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/Paladin/Paladin.h
+#ifndef PALADIN_H
+#define PALADIN_H 
+
+#include "../../Character.h"
+#include <string>
+
+class Paladin : public Character {
+public:
+    Paladin(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/Paladin/Paladin.cpp
+#include "Paladin.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Paladin::Paladin(const std::string &name)
+    : Character(name, 95, 18, 8) {}  // Higher health and defense, moderate attack
+
+void Paladin::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Holy Blade", "Divine Strike", "Sanctified Hammer"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1: 
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Berserker/Berserker.h
+#ifndef BERSERKER_H
+#define BERSERKER_H
+  
+#include "../../Character.h"
+#include <string>
+
+class Berserker : public Character {
+public:
+    Berserker(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/Berserker/Berserker.cpp
+#include "Berserker.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Berserker::Berserker(const std::string &name)
+    : Character(name, 80, 30, 2) {}  // Example: lower health, high attack
+
+void Berserker::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Frenzied Strike", "Blood Rage", "Rampage Smash"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Cleric/Cleric.h
+#ifndef CLERIC_H
+#define CLERIC_H
+
+#include "../../Character.h"
+#include <string>
+
+class Cleric : public Character {
+public:
+    Cleric(const std::string &name);
+    virtual void attack(Character &target, bool isPlayer) override;
+};
+
+#endif
+
+// ./Characters/Cleric/Cleric.cpp
+#include "Cleric.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Cleric::Cleric(const std::string &name)
+    : Character(name, 75, 10, 5) {}  // Example: lower attack but higher defense
+
+void Cleric::attack(Character &target, bool isPlayer) {
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Holy Smite", "Divine Wrath", "Sacred Light"};
+        
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./Characters/Beastmaster/Beastmaster.h
+#ifndef BEASTMASTER_H
+#define BEASTMASTER_H
+
+#include "../../Character.h"
+#include <string>
+
+class Beastmaster : public Character {
+public:
+    Beastmaster(const std::string &name);
+    virtual void attack(Character &target, bool isPayer) override;
+};
+
+#endif
+
+// ./Characters/Beastmaster/Beastmaster.cpp
+#include "Beastmaster.h"
+#include "../../UI.h"
+#include <iostream>
+#include <cstdlib>
+
+Beastmaster::Beastmaster(const std::string &name)
+    : Character(name, 90, 18, 4) {}  // Example: moderate health, decent attack
+
+void Beastmaster::attack(Character &target, bool isPlayer) { 
+    // ATTACK OPTIONS
+    std::string attackOptions[3] = {"Savage Bite", "Primal Roar", "Feral Slash"};
+    
+    int choice = 0;
+    if (isPlayer){
+        choice = UI::chooseAttackMenu(attackOptions);
+    } else {
+        choice = std::rand() % 3 + 1;
+    }
+
+    if (choice < 1 || choice > 3) {
+        std::cout << "Invalid choice, defaulting to Backstab. \n";
+        choice = 1;
+    }
+
+    // Compute damage
+    int damage = 0;
+    switch (choice) {
+        case 1:
+            damage = attackPower + 5 + (std::rand() % 3 - 1); // + - 1
+            break;
+        case 2:
+            damage = attackPower + 10 + (std::rand() % 5 - 2);
+            break;
+        case 3:
+            damage = attackPower + 3 + (std::rand() % 3 - 1);
+            break;
+    }
+
+    std::cout << name << " uses " << attackOptions[choice - 1] << " on " << 
+                target.getName() << ", dealing " << damage << " damage!\n";
+
+    target.takeDamage(damage);
+}
+
+// ./.git/index
+// Could not read file: 'utf-8' codec can't decode byte 0xd0 in position 13: invalid continuation byte
+
+// ./.git/HEAD
+ref: refs/heads/attack_styles
+
+// ./.git/description
+Unnamed repository; edit this file 'description' to name the repository.
+
+// ./.git/COMMIT_EDITMSG
+Change battle mechanincs
+
+// ./.git/config
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+[remote "origin"]
+	url = git@github.com:Dagurf21/PA4_jrpg.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+
+// ./.git/logs/HEAD
+0000000000000000000000000000000000000000 cc4544094d2ef8144fb96668858989f5fc7b0bf2 dagurf21 <dagur.freyr2820@gmail.com> 1741189614 +0000	commit (initial): Initial commit
+cc4544094d2ef8144fb96668858989f5fc7b0bf2 0000000000000000000000000000000000000000 dagurf21 <dagur.freyr2820@gmail.com> 1741189855 +0000	Branch: renamed refs/heads/master to refs/heads/main
+0000000000000000000000000000000000000000 cc4544094d2ef8144fb96668858989f5fc7b0bf2 dagurf21 <dagur.freyr2820@gmail.com> 1741189855 +0000	Branch: renamed refs/heads/master to refs/heads/main
+cc4544094d2ef8144fb96668858989f5fc7b0bf2 2b6479eeeb4ee4140e8e6f26298f2d34a12cb376 dagurf21 <dagur.freyr2820@gmail.com> 1741254180 +0000	commit: Adding characters and changing file structure
+2b6479eeeb4ee4140e8e6f26298f2d34a12cb376 f62da6d613688e41b497f51ee8b9c036ed64a6a2 dagurf21 <dagur.freyr2820@gmail.com> 1741628585 +0000	commit: UI changes
+f62da6d613688e41b497f51ee8b9c036ed64a6a2 00fac30a47b01ca3d7d321525d4c770d343addde dagurf21 <dagur.freyr2820@gmail.com> 1741689973 +0000	commit: fix main output
+00fac30a47b01ca3d7d321525d4c770d343addde 00fac30a47b01ca3d7d321525d4c770d343addde dagurf21 <dagur.freyr2820@gmail.com> 1741690023 +0000	checkout: moving from main to attack_styles
+00fac30a47b01ca3d7d321525d4c770d343addde 9c243649fb06e903beac373ca8182f66725999c2 dagurf21 <dagur.freyr2820@gmail.com> 1741873234 +0000	commit: Change battle mechanincs
+
+// ./.git/logs/refs/heads/main
+0000000000000000000000000000000000000000 cc4544094d2ef8144fb96668858989f5fc7b0bf2 dagurf21 <dagur.freyr2820@gmail.com> 1741189614 +0000	commit (initial): Initial commit
+cc4544094d2ef8144fb96668858989f5fc7b0bf2 cc4544094d2ef8144fb96668858989f5fc7b0bf2 dagurf21 <dagur.freyr2820@gmail.com> 1741189855 +0000	Branch: renamed refs/heads/master to refs/heads/main
+cc4544094d2ef8144fb96668858989f5fc7b0bf2 2b6479eeeb4ee4140e8e6f26298f2d34a12cb376 dagurf21 <dagur.freyr2820@gmail.com> 1741254180 +0000	commit: Adding characters and changing file structure
+2b6479eeeb4ee4140e8e6f26298f2d34a12cb376 f62da6d613688e41b497f51ee8b9c036ed64a6a2 dagurf21 <dagur.freyr2820@gmail.com> 1741628585 +0000	commit: UI changes
+f62da6d613688e41b497f51ee8b9c036ed64a6a2 00fac30a47b01ca3d7d321525d4c770d343addde dagurf21 <dagur.freyr2820@gmail.com> 1741689973 +0000	commit: fix main output
+
+// ./.git/logs/refs/heads/attack_styles
+0000000000000000000000000000000000000000 00fac30a47b01ca3d7d321525d4c770d343addde dagurf21 <dagur.freyr2820@gmail.com> 1741690012 +0000	branch: Created from main
+00fac30a47b01ca3d7d321525d4c770d343addde 9c243649fb06e903beac373ca8182f66725999c2 dagurf21 <dagur.freyr2820@gmail.com> 1741873234 +0000	commit: Change battle mechanincs
+
+// ./.git/logs/refs/remotes/origin/main
+0000000000000000000000000000000000000000 cc4544094d2ef8144fb96668858989f5fc7b0bf2 dagurf21 <dagur.freyr2820@gmail.com> 1741193034 +0000	update by push
+cc4544094d2ef8144fb96668858989f5fc7b0bf2 f62da6d613688e41b497f51ee8b9c036ed64a6a2 dagurf21 <dagur.freyr2820@gmail.com> 1741629197 +0000	update by push
+f62da6d613688e41b497f51ee8b9c036ed64a6a2 00fac30a47b01ca3d7d321525d4c770d343addde dagurf21 <dagur.freyr2820@gmail.com> 1741689977 +0000	update by push
+
+// ./.git/objects/f7/3cf1b0cd70a93e972ee2d5d28385df9f1eafed
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/f1/7b485b72345ec3c2be55a3c1c54a46662d7b62
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/a8/bfaa111f0ac34e6f96edb55eb5a869fa9993a5
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/13/82ea70e836d4641989039a574a2a83faf985a1
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/13/45989c9d5e16569e4ec7b94a3acfa59e53f038
+// Could not read file: 'utf-8' codec can't decode byte 0xb2 in position 8: invalid start byte
+
+// ./.git/objects/f8/8ef01c7373492b8aea5fc526830910379cf456
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/2b/f77e82087f957416db72662f8be1c7681e2af4
+// Could not read file: 'utf-8' codec can't decode byte 0x92 in position 3: invalid start byte
+
+// ./.git/objects/2b/6479eeeb4ee4140e8e6f26298f2d34a12cb376
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/97/92c74b79737e3e2d6f326b68d81d25c12199af
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/97/5b5954340f5e1f7c3e1151b069671bc143519a
+// Could not read file: 'utf-8' codec can't decode byte 0xa7 in position 16: invalid start byte
+
+// ./.git/objects/ff/df1a0c016269ebb5200c0c1dcae2e71c7fd5b7
+// Could not read file: 'utf-8' codec can't decode byte 0xcc in position 20: invalid continuation byte
+
+// ./.git/objects/bf/5e0b47d527ffe2366163b90d3019c2deddddc3
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/e2/e39405bd96bcb97d9219414da13bb4e0d51fdf
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/e2/21777abc66c811677867a5e289a07bba1931ef
+// Could not read file: 'utf-8' codec can't decode byte 0xc4 in position 6: invalid continuation byte
+
+// ./.git/objects/e2/53a8f7fd4d1a3915f2bf373ceedface58eb512
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/23/76b063b4c1ff7db53b4dfc1df28de38233500b
+// Could not read file: 'utf-8' codec can't decode byte 0xcb in position 4: invalid continuation byte
+
+// ./.git/objects/25/619a33b1f127f335664990cfdfc818507b3a9c
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/db/30da47c30793070329cbca0b5553683effa8ff
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 21: invalid continuation byte
+
+// ./.git/objects/fe/5f8bf6b8028ee138ac25ba5bf777ee5b93c8d2
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/4f/118be1363f27eabe4ed0747761019f9184d73c
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/4f/7cbff7988ac8cadc13487762a86e3d78d5a272
+// Could not read file: 'utf-8' codec can't decode byte 0x8e in position 3: invalid start byte
+
+// ./.git/objects/2a/32d8b675af77f49381e6aee3807cbb4a4529ef
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 19: invalid continuation byte
+
+// ./.git/objects/09/994fa02a6862fc06f6b7a25b4affc66b7c5d1a
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/09/0e6e0fedba257aa4c45f2cc257e5ca24f94a8b
+// Could not read file: 'utf-8' codec can't decode byte 0xb0 in position 7: invalid start byte
+
+// ./.git/objects/01/481ea5c6f7f59b13693a594cc9a7ba704e33a1
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/01/349a0c06241dbd5f056b237675a4eadb7148e0
+// Could not read file: 'utf-8' codec can't decode byte 0xb0 in position 7: invalid start byte
+
+// ./.git/objects/00/fac30a47b01ca3d7d321525d4c770d343addde
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/5d/692819503166acebc4b562078be1b2eeded517
+// Could not read file: 'utf-8' codec can't decode byte 0xb4 in position 9: invalid start byte
+
+// ./.git/objects/45/78c5781bfbdb29d6e9012354a781e4894bc643
+// Could not read file: 'utf-8' codec can't decode byte 0xc2 in position 6: invalid continuation byte
+
+// ./.git/objects/45/f80534c9800f7cdcbb2220476814041f6d1665
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/6a/32f39b0fb4eadb2f6a0be1096763a1c147a7c0
+// Could not read file: 'utf-8' codec can't decode byte 0xed in position 2: invalid continuation byte
+
+// ./.git/objects/9c/243649fb06e903beac373ca8182f66725999c2
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/6b/475aeb45411e76fd19ecd0b6e4e23ca979e59a
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 19: invalid continuation byte
+
+// ./.git/objects/c5/6da9a8a6152c0206723774796eeb2844842396
+// Could not read file: 'utf-8' codec can't decode byte 0x90 in position 3: invalid start byte
+
+// ./.git/objects/e5/8bb109300acff12fde5c22d71157bd09e8ae8d
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/42/ee760dde716dda2fc5d3d8579e2a1b66289f94
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 18: invalid continuation byte
+
+// ./.git/objects/42/10c5c5c926a4e999d42c1082dfcdd5b84d2c24
+// Could not read file: 'utf-8' codec can't decode byte 0x8e in position 3: invalid start byte
+
+// ./.git/objects/41/41a9bb266fa8022cdc18618678b0ee3e117109
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 3: invalid start byte
+
+// ./.git/objects/cb/42a200f9ee042742232060a147fbf4d17ec911
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/e4/ba90cf87b58008c5101da0c4dc9f2060933cdd
+// Could not read file: 'utf-8' codec can't decode byte 0xdb in position 6: invalid continuation byte
+
+// ./.git/objects/63/8799d2335b353c26b5594d80379151d580f87b
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/63/18a7256338ff4a24fca6844215ea511cbe91e3
+// Could not read file: 'utf-8' codec can't decode byte 0xb2 in position 9: invalid start byte
+
+// ./.git/objects/63/e8d025a32612a87683108168a5e2c8af1119ad
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/33/897e6620a75e07b4ee42c4521e8a398729af4a
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 18: invalid continuation byte
+
+// ./.git/objects/c2/738916d8b78bcff4e8f21c7f9acca47d6e94ed
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 23: invalid continuation byte
+
+// ./.git/objects/c3/a90bfa487c8e5320dbbe1fd19b20a435426a95
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/9e/47704bdd89b6cccdc9fcbd376f48b27801d578
+// Could not read file: 'utf-8' codec can't decode byte 0xc9 in position 23: invalid continuation byte
+
+// ./.git/objects/9e/446f32292db7fbe12007f68ccfd40dd1a9e913
+// Could not read file: 'utf-8' codec can't decode byte 0x95 in position 2: invalid start byte
+
+// ./.git/objects/9e/21065835c095c1a63af32e8375a58f3f1f9667
+// Could not read file: 'utf-8' codec can't decode byte 0xc2 in position 6: invalid continuation byte
+
+// ./.git/objects/9e/42a60f7086afed878accee2307b8a9e2654bfe
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/a1/cff81252262e2e01d9c46f541091827b8f850b
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 19: invalid continuation byte
+
+// ./.git/objects/7e/ac81179f083048db39adc3e135fdc1cf0264a7
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/0f/191110b121699988c0cb56b73a0ea5f5a3aecd
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 19: invalid continuation byte
+
+// ./.git/objects/8d/ddad2a0ed57544972363d707a931b5b6bf7879
+// Could not read file: 'utf-8' codec can't decode byte 0xb0 in position 7: invalid start byte
+
+// ./.git/objects/f3/7405e8f5b9e60f37a29d5c32302fa3a02fe0bb
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/83/9aa532f580b5b8a93b78ed3df35972c9f41a55
+// Could not read file: 'utf-8' codec can't decode byte 0x8f in position 3: invalid start byte
+
+// ./.git/objects/83/9f5fe925a49b61290ef06d550e13457277b1a8
+// Could not read file: 'utf-8' codec can't decode byte 0xa7 in position 16: invalid start byte
+
+// ./.git/objects/54/24443e1939d3f8493077dfe1b7059aa51e2b55
+// Could not read file: 'utf-8' codec can't decode byte 0xed in position 2: invalid continuation byte
+
+// ./.git/objects/89/6ae56981966cdc4a471f63eb6a31ccaeb6f1ec
+// Could not read file: 'utf-8' codec can't decode byte 0xb0 in position 7: invalid start byte
+
+// ./.git/objects/19/fda2394179f980ba85c505e1be53a96bad8da6
+// Could not read file: 'utf-8' codec can't decode byte 0xb2 in position 9: invalid start byte
+
+// ./.git/objects/cc/4544094d2ef8144fb96668858989f5fc7b0bf2
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/d2/585e73cd6b51ee9e1e53db97c25f8f3dbb78f8
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/8b/f1ab14ae3fb17bf3b26fd635c70afe9e6e27d9
+// Could not read file: 'utf-8' codec can't decode byte 0xed in position 2: invalid continuation byte
+
+// ./.git/objects/b1/914ed5345d2babd6b59d5c77b58d8f5eaa8b75
+// Could not read file: 'utf-8' codec can't decode byte 0xad in position 2: invalid start byte
+
+// ./.git/objects/3d/b28b19a62c2f2fc0a8746e17fb7c61fd49d0f2
+// Could not read file: 'utf-8' codec can't decode byte 0x90 in position 3: invalid start byte
+
+// ./.git/objects/a7/a7e3f658e1699420382b7c8f43abd8113668e8
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 22: invalid continuation byte
+
+// ./.git/objects/cd/38d44cfecd0999eabc1871ae4f412aa550aa00
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/aa/31368727eaef67df003ee78839323f967c58b8
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/90/916174187c0115d07ea1df91204957d9676fdc
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/71/9dd2a0f7128c529ce2ffa135d4227cb18d00ad
+// Could not read file: 'utf-8' codec can't decode byte 0xad in position 2: invalid start byte
+
+// ./.git/objects/d3/a014aa8655e1be3d6c8586946eb51d71bd7c50
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/c6/f895aee149ad29a2434d793d37dba0af0c6fe3
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/49/b69859a4b1f05e1f5b3a18d2ce3b36516c25cb
+// Could not read file: 'utf-8' codec can't decode byte 0xc9 in position 23: invalid continuation byte
+
+// ./.git/objects/49/470a20d147385c9edf0a197a55096132828684
+// Could not read file: 'utf-8' codec can't decode byte 0xc2 in position 6: invalid continuation byte
+
+// ./.git/objects/c4/92f303321a2bef12e7526818418cf6365ae293
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/b6/d841d607e44efbe45d2527b5299f174a5c1b34
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/ab/b90f6b81bf760fe44da148fc20d041f59a9821
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/ba/3b0f1ea04ecd36ceb757c6ea7beec444f1f0bf
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 3: invalid start byte
+
+// ./.git/objects/80/7dddf4f568df5429f8e477de70f20a638838d7
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/80/0c025045389ee24bfaf9e3aab68f49ce3b1a7e
+// Could not read file: 'utf-8' codec can't decode byte 0xcc in position 19: invalid continuation byte
+
+// ./.git/objects/1f/32c8a711235f951e632e5b3d88af42ed4c233b
+// Could not read file: 'utf-8' codec can't decode byte 0xcc in position 3: invalid continuation byte
+
+// ./.git/objects/ef/6e4a0aecab4a45f072e31c25464909a8239273
+// Could not read file: 'utf-8' codec can't decode byte 0xb4 in position 9: invalid start byte
+
+// ./.git/objects/fd/de2b6a6509156c98f0aa4b32f44404fbaab1df
+// Could not read file: 'utf-8' codec can't decode byte 0x92 in position 3: invalid start byte
+
+// ./.git/objects/96/60ffe20cdee7d1413cb9b16619af1bcd5f773b
+// Could not read file: 'utf-8' codec can't decode byte 0x92 in position 3: invalid start byte
+
+// ./.git/objects/96/7839444ec0b99545961deff07ed660271e6fbd
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/8e/8355a6ddfd3eeab07e4aaa2c7f37ca8f0e7136
+// Could not read file: 'utf-8' codec can't decode byte 0xb5 in position 2: invalid start byte
+
+// ./.git/objects/8e/2a3d9bb011bec7c5d12b9f929ee9229d51798c
+// Could not read file: 'utf-8' codec can't decode bytes in position 2-3: invalid continuation byte
+
+// ./.git/objects/4a/0deee1230b04e71cdeac46c6cb358be3f6a89f
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/4a/ee41125c8d98700db589b4e48bb0675e2f7f23
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/17/8e70b1f1c30593c3f9ef81d6aec38eb1bf7163
+// Could not read file: 'utf-8' codec can't decode byte 0xcb in position 4: invalid continuation byte
+
+// ./.git/objects/d9/a0ca0755a02f3e2d0c57c9126edae79ded5e3d
+// Could not read file: 'utf-8' codec can't decode byte 0xb2 in position 8: invalid start byte
+
+// ./.git/objects/d9/bc56837a27c8aadc8fbf5bfe0e3cc6047c7447
+// Could not read file: 'utf-8' codec can't decode byte 0xa7 in position 16: invalid start byte
+
+// ./.git/objects/5e/a33635e26821eb9f7f680bb4617a6ec0446e3d
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 19: invalid continuation byte
+
+// ./.git/objects/05/788b25025780dd1a07c3c5265305120cc55923
+// Could not read file: 'utf-8' codec can't decode byte 0xc3 in position 6: invalid continuation byte
+
+// ./.git/objects/18/0ac3f797e1af6c794d94d865f9ff8200c8c11b
+// Could not read file: 'utf-8' codec can't decode byte 0xcd in position 4: invalid continuation byte
+
+// ./.git/objects/70/2a96d1dd8dbbf4b7e45661576d8710a25934d5
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 21: invalid continuation byte
+
+// ./.git/objects/16/53233dacc42891f29a31847b3e4d01c2f1e602
+// Could not read file: 'utf-8' codec can't decode byte 0x90 in position 3: invalid start byte
+
+// ./.git/objects/56/54714588cbe6a3b8ec9ce2550555984d20aa45
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 3: invalid start byte
+
+// ./.git/objects/3e/f439253152d5880787ceea3f380ac2de121319
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/ea/97b90ac1063ef8601835ef380c1bbf132f2130
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/65/cb8bbbe8d7e5a80f2608053db3b933ef017994
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/7b/d03886a4a37e0ce80f931405edeafa60500498
+// Could not read file: 'utf-8' codec can't decode byte 0xce in position 19: invalid continuation byte
+
+// ./.git/objects/d8/2c0a0b12f7180b9693937b1d06102c123da925
+// Could not read file: 'utf-8' codec can't decode byte 0x92 in position 3: invalid start byte
+
+// ./.git/objects/5b/59d148e95548f020a5aad9f6f3bbec5679a625
+// Could not read file: 'utf-8' codec can't decode byte 0xc1 in position 4: invalid start byte
+
+// ./.git/objects/07/07f8075d3bc6893d91b77dc41aa6dad012b715
+// Could not read file: 'utf-8' codec can't decode byte 0xb0 in position 7: invalid start byte
+
+// ./.git/objects/af/12475024f03db3fb696a68cb9f4b670ac7daab
+// Could not read file: 'utf-8' codec can't decode byte 0x8d in position 2: invalid start byte
+
+// ./.git/objects/f6/2da6d613688e41b497f51ee8b9c036ed64a6a2
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/d1/3fa862dec84e42c110318a9177ea8164dcd7ad
+// Could not read file: 'utf-8' codec can't decode bytes in position 2-3: invalid continuation byte
+
+// ./.git/objects/50/eb7a4ec5ac4fc4decf757d8ad3cb9e96ade30d
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/46/5679b53b718f55fe27c9ea287b300763fea380
+// Could not read file: 'utf-8' codec can't decode byte 0x9d in position 2: invalid start byte
+
+// ./.git/objects/87/d3655f2faf7d73d51178bd2c0b79a853b85829
+// Could not read file: 'utf-8' codec can't decode byte 0x91 in position 3: invalid start byte
+
+// ./.git/objects/87/ed55173151c57b9171a6cd4f7989a01ff6ed90
+// Could not read file: 'utf-8' codec can't decode byte 0xc2 in position 6: invalid continuation byte
+
+// ./.git/objects/b9/43bf08a4e1d22351edc4af9d8df8dcbe920132
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/82/dc3adcf6e8032af82216d396a91cef0e51e825
+// Could not read file: 'utf-8' codec can't decode byte 0xcc in position 20: invalid continuation byte
+
+// ./.git/objects/82/4e854fb3ad8d9830885024495e7b0cc89bc732
+// Could not read file: 'utf-8' codec can't decode byte 0xf0 in position 17: invalid continuation byte
+
+// ./.git/objects/9b/eae8e7f2fb33adb54c1d843eff0309d4fc696a
+// Could not read file: 'utf-8' codec can't decode byte 0xf0 in position 18: invalid continuation byte
+
+// ./.git/objects/a4/0cad93bfcd63614fb00d80000ab4ce97fef522
+// Could not read file: 'utf-8' codec can't decode byte 0x8c in position 3: invalid start byte
+
+// ./.git/objects/f9/12687cae250f1ef4bccf83ad4c17517e273aee
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/f9/68335697b13426c5a7d0cbe18d39adcd937298
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 22: invalid continuation byte
+
+// ./.git/objects/c0/c780c204a88635ea316e328eaa05b014aa6af4
+// Could not read file: 'utf-8' codec can't decode byte 0xbd in position 2: invalid start byte
+
+// ./.git/objects/3b/f35499749d871db3e5bc10c092cb56d08183f6
+// Could not read file: 'utf-8' codec can't decode byte 0x8e in position 3: invalid start byte
+
+// ./.git/objects/a2/01db92bff443f8a99b8d204997b367415c1fcb
+// Could not read file: 'utf-8' codec can't decode byte 0xcb in position 4: invalid continuation byte
+
+// ./.git/objects/64/ec4301dae172de2e064ee8556f60e4a40074ab
+// Could not read file: 'utf-8' codec can't decode byte 0xf0 in position 18: invalid continuation byte
+
+// ./.git/objects/64/1ac2e8924b049b7f6621f6b401eac08df177a8
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/objects/b2/1bd04511a01e356dceef8b8f267187b294794b
+// Could not read file: 'utf-8' codec can't decode byte 0xad in position 2: invalid start byte
+
+// ./.git/objects/59/bbe04be523e16af04bf1ef8a367ca12c5e2810
+// Could not read file: 'utf-8' codec can't decode byte 0xca in position 21: invalid continuation byte
+
+// ./.git/objects/f0/a8ee802def21ae41bbe76bcbcd1b0e94ccd638
+// Could not read file: 'utf-8' codec can't decode byte 0xa5 in position 2: invalid start byte
+
+// ./.git/info/exclude
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+// ./.git/refs/heads/main
+00fac30a47b01ca3d7d321525d4c770d343addde
+
+// ./.git/refs/heads/attack_styles
+9c243649fb06e903beac373ca8182f66725999c2
+
+// ./.git/refs/remotes/origin/main
+00fac30a47b01ca3d7d321525d4c770d343addde
+
+// ./.git/hooks/pre-applypatch.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+precommit="$(git rev-parse --git-path hooks/pre-commit)"
+test -x "$precommit" && exec "$precommit" ${1+"$@"}
+:
+
+// ./.git/hooks/fsmonitor-watchman.sample
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+# An example hook script to integrate Watchman
+# (https://facebook.github.io/watchman/) with git to speed up detecting
+# new and modified files.
+#
+# The hook is passed a version (currently 2) and last update token
+# formatted as a string and outputs to stdout a new update token and
+# all files that have been modified since the update token. Paths must
+# be relative to the root of the working tree and separated by a single NUL.
+#
+# To enable this hook, rename this file to "query-watchman" and set
+# 'git config core.fsmonitor .git/hooks/query-watchman'
+#
+my ($version, $last_update_token) = @ARGV;
+
+# Uncomment for debugging
+# print STDERR "$0 $version $last_update_token\n";
+
+# Check the hook interface version
+if ($version ne 2) {
+	die "Unsupported query-fsmonitor hook version '$version'.\n" .
+	    "Falling back to scanning...\n";
+}
+
+my $git_work_tree = get_working_dir();
+
+my $retry = 1;
+
+my $json_pkg;
+eval {
+	require JSON::XS;
+	$json_pkg = "JSON::XS";
+	1;
+} or do {
+	require JSON::PP;
+	$json_pkg = "JSON::PP";
+};
+
+launch_watchman();
+
+sub launch_watchman {
+	my $o = watchman_query();
+	if (is_work_tree_watched($o)) {
+		output_result($o->{clock}, @{$o->{files}});
+	}
+}
+
+sub output_result {
+	my ($clockid, @files) = @_;
+
+	# Uncomment for debugging watchman output
+	# open (my $fh, ">", ".git/watchman-output.out");
+	# binmode $fh, ":utf8";
+	# print $fh "$clockid\n@files\n";
+	# close $fh;
+
+	binmode STDOUT, ":utf8";
+	print $clockid;
+	print "\0";
+	local $, = "\0";
+	print @files;
+}
+
+sub watchman_clock {
+	my $response = qx/watchman clock "$git_work_tree"/;
+	die "Failed to get clock id on '$git_work_tree'.\n" .
+		"Falling back to scanning...\n" if $? != 0;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub watchman_query {
+	my $pid = open2(\*CHLD_OUT, \*CHLD_IN, 'watchman -j --no-pretty')
+	or die "open2() failed: $!\n" .
+	"Falling back to scanning...\n";
+
+	# In the query expression below we're asking for names of files that
+	# changed since $last_update_token but not from the .git folder.
+	#
+	# To accomplish this, we're using the "since" generator to use the
+	# recency index to select candidate nodes and "fields" to limit the
+	# output to file names only. Then we're using the "expression" term to
+	# further constrain the results.
+	my $last_update_line = "";
+	if (substr($last_update_token, 0, 1) eq "c") {
+		$last_update_token = "\"$last_update_token\"";
+		$last_update_line = qq[\n"since": $last_update_token,];
+	}
+	my $query = <<"	END";
+		["query", "$git_work_tree", {$last_update_line
+			"fields": ["name"],
+			"expression": ["not", ["dirname", ".git"]]
+		}]
+	END
+
+	# Uncomment for debugging the watchman query
+	# open (my $fh, ">", ".git/watchman-query.json");
+	# print $fh $query;
+	# close $fh;
+
+	print CHLD_IN $query;
+	close CHLD_IN;
+	my $response = do {local $/; <CHLD_OUT>};
+
+	# Uncomment for debugging the watch response
+	# open ($fh, ">", ".git/watchman-response.json");
+	# print $fh $response;
+	# close $fh;
+
+	die "Watchman: command returned no output.\n" .
+	"Falling back to scanning...\n" if $response eq "";
+	die "Watchman: command returned invalid output: $response\n" .
+	"Falling back to scanning...\n" unless $response =~ /^\{/;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub is_work_tree_watched {
+	my ($output) = @_;
+	my $error = $output->{error};
+	if ($retry > 0 and $error and $error =~ m/unable to resolve root .* directory (.*) is not watched/) {
+		$retry--;
+		my $response = qx/watchman watch "$git_work_tree"/;
+		die "Failed to make watchman watch '$git_work_tree'.\n" .
+		    "Falling back to scanning...\n" if $? != 0;
+		$output = $json_pkg->new->utf8->decode($response);
+		$error = $output->{error};
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		# Uncomment for debugging watchman output
+		# open (my $fh, ">", ".git/watchman-output.out");
+		# close $fh;
+
+		# Watchman will always return all files on the first query so
+		# return the fast "everything is dirty" flag to git and do the
+		# Watchman query just to get it over with now so we won't pay
+		# the cost in git to look up each individual file.
+		my $o = watchman_clock();
+		$error = $output->{error};
+
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		output_result($o->{clock}, ("/"));
+		$last_update_token = $o->{clock};
+
+		eval { launch_watchman() };
+		return 0;
+	}
+
+	die "Watchman: $error.\n" .
+	"Falling back to scanning...\n" if $error;
+
+	return 1;
+}
+
+sub get_working_dir {
+	my $working_dir;
+	if ($^O =~ 'msys' || $^O =~ 'cygwin') {
+		$working_dir = Win32::GetCwd();
+		$working_dir =~ tr/\\/\//;
+	} else {
+		require Cwd;
+		$working_dir = Cwd::cwd();
+	}
+
+	return $working_dir;
+}
+
+// ./.git/hooks/sendemail-validate.sample
+#!/bin/sh
+
+# An example hook script to validate a patch (and/or patch series) before
+# sending it via email.
+#
+# The hook should exit with non-zero status after issuing an appropriate
+# message if it wants to prevent the email(s) from being sent.
+#
+# To enable this hook, rename this file to "sendemail-validate".
+#
+# By default, it will only check that the patch(es) can be applied on top of
+# the default upstream branch without conflicts in a secondary worktree. After
+# validation (successful or not) of the last patch of a series, the worktree
+# will be deleted.
+#
+# The following config variables can be set to change the default remote and
+# remote ref that are used to apply the patches against:
+#
+#   sendemail.validateRemote (default: origin)
+#   sendemail.validateRemoteRef (default: HEAD)
+#
+# Replace the TODO placeholders with appropriate checks according to your
+# needs.
+
+validate_cover_letter () {
+	file="$1"
+	# TODO: Replace with appropriate checks (e.g. spell checking).
+	true
+}
+
+validate_patch () {
+	file="$1"
+	# Ensure that the patch applies without conflicts.
+	git am -3 "$file" || return
+	# TODO: Replace with appropriate checks for this patch
+	# (e.g. checkpatch.pl).
+	true
+}
+
+validate_series () {
+	# TODO: Replace with appropriate checks for the whole series
+	# (e.g. quick build, coding style checks, etc.).
+	true
+}
+
+# main -------------------------------------------------------------------------
+
+if test "$GIT_SENDEMAIL_FILE_COUNTER" = 1
+then
+	remote=$(git config --default origin --get sendemail.validateRemote) &&
+	ref=$(git config --default HEAD --get sendemail.validateRemoteRef) &&
+	worktree=$(mktemp --tmpdir -d sendemail-validate.XXXXXXX) &&
+	git worktree add -fd --checkout "$worktree" "refs/remotes/$remote/$ref" &&
+	git config --replace-all sendemail.validateWorktree "$worktree"
+else
+	worktree=$(git config --get sendemail.validateWorktree)
+fi || {
+	echo "sendemail-validate: error: failed to prepare worktree" >&2
+	exit 1
+}
+
+unset GIT_DIR GIT_WORK_TREE
+cd "$worktree" &&
+
+if grep -q "^diff --git " "$1"
+then
+	validate_patch "$1"
+else
+	validate_cover_letter "$1"
+fi &&
+
+if test "$GIT_SENDEMAIL_FILE_COUNTER" = "$GIT_SENDEMAIL_FILE_TOTAL"
+then
+	git config --unset-all sendemail.validateWorktree &&
+	trap 'git worktree remove -ff "$worktree"' EXIT &&
+	validate_series
+fi
+
+// ./.git/hooks/pre-rebase.sample
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
+
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
+
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
+
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
+
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
+}
+
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up to date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+<<\DOC_END
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
+
+ * A has one fix since it was merged up to "next".
+
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".
+
+DOC_END
+
+// ./.git/hooks/pre-receive.sample
+#!/bin/sh
+#
+# An example hook script to make use of push options.
+# The example simply echoes all push options that start with 'echoback='
+# and rejects all pushes when the "reject" push option is used.
+#
+# To enable this hook, rename this file to "pre-receive".
+
+if test -n "$GIT_PUSH_OPTION_COUNT"
+then
+	i=0
+	while test "$i" -lt "$GIT_PUSH_OPTION_COUNT"
+	do
+		eval "value=\$GIT_PUSH_OPTION_$i"
+		case "$value" in
+		echoback=*)
+			echo "echo from the pre-receive-hook: ${value#*=}" >&2
+			;;
+		reject)
+			exit 1
+		esac
+		i=$((i + 1))
+	done
+fi
+
+// ./.git/hooks/update.sample
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --type=bool hooks.allowunannotated)
+allowdeletebranch=$(git config --type=bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --type=bool hooks.denycreatebranch)
+allowdeletetag=$(git config --type=bool hooks.allowdeletetag)
+allowmodifytag=$(git config --type=bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+// ./.git/hooks/push-to-checkout.sample
+#!/bin/sh
+
+# An example hook script to update a checked-out tree on a git push.
+#
+# This hook is invoked by git-receive-pack(1) when it reacts to git
+# push and updates reference(s) in its repository, and when the push
+# tries to update the branch that is currently checked out and the
+# receive.denyCurrentBranch configuration variable is set to
+# updateInstead.
+#
+# By default, such a push is refused if the working tree and the index
+# of the remote repository has any difference from the currently
+# checked out commit; when both the working tree and the index match
+# the current commit, they are updated to match the newly pushed tip
+# of the branch. This hook is to be used to override the default
+# behaviour; however the code below reimplements the default behaviour
+# as a starting point for convenient modification.
+#
+# The hook receives the commit with which the tip of the current
+# branch is going to be updated:
+commit=$1
+
+# It can exit with a non-zero status to refuse the push (when it does
+# so, it must not modify the index or the working tree).
+die () {
+	echo >&2 "$*"
+	exit 1
+}
+
+# Or it can make any necessary changes to the working tree and to the
+# index to bring them to the desired state when the tip of the current
+# branch is updated to the new commit, and exit with a zero status.
+#
+# For example, the hook can simply run git read-tree -u -m HEAD "$1"
+# in order to emulate git fetch that is run in the reverse direction
+# with git push, as the two-tree form of git read-tree -u -m is
+# essentially the same as git switch or git checkout that switches
+# branches while keeping the local changes in the working tree that do
+# not interfere with the difference between the branches.
+
+# The below is a more-or-less exact translation to shell of the C code
+# for the default behaviour for git's push-to-checkout hook defined in
+# the push_to_deploy() function in builtin/receive-pack.c.
+#
+# Note that the hook will be executed from the repository directory,
+# not from the working tree, so if you want to perform operations on
+# the working tree, you will have to adapt your code accordingly, e.g.
+# by adding "cd .." or using relative paths.
+
+if ! git update-index -q --ignore-submodules --refresh
+then
+	die "Up-to-date check failed"
+fi
+
+if ! git diff-files --quiet --ignore-submodules --
+then
+	die "Working directory has unstaged changes"
+fi
+
+# This is a rough translation of:
+#
+#   head_has_history() ? "HEAD" : EMPTY_TREE_SHA1_HEX
+if git cat-file -e HEAD 2>/dev/null
+then
+	head=HEAD
+else
+	head=$(git hash-object -t tree --stdin </dev/null)
+fi
+
+if ! git diff-index --quiet --cached --ignore-submodules $head --
+then
+	die "Working directory has staged changes"
+fi
+
+if ! git read-tree -u -m "$commit"
+then
+	die "Could not update working tree to new HEAD"
+fi
+
+// ./.git/hooks/pre-push.sample
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local oid> <remote ref> <remote oid>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
+
+remote="$1"
+url="$2"
+
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+
+while read local_ref local_oid remote_ref remote_oid
+do
+	if test "$local_oid" = "$zero"
+	then
+		# Handle delete
+		:
+	else
+		if test "$remote_oid" = "$zero"
+		then
+			# New branch, examine all commits
+			range="$local_oid"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_oid..$local_oid"
+		fi
+
+		# Check for WIP commit
+		commit=$(git rev-list -n 1 --grep '^WIP' "$range")
+		if test -n "$commit"
+		then
+			echo >&2 "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0
+
+// ./.git/hooks/pre-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+  git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --
+
+// ./.git/hooks/post-update.sample
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info
+
+// ./.git/hooks/pre-merge-commit.sample
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git merge" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message to
+# stderr if it wants to stop the merge commit.
+#
+# To enable this hook, rename this file to "pre-merge-commit".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+        exec "$GIT_DIR/hooks/pre-commit"
+:
+
+// ./.git/hooks/commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+
+// ./.git/hooks/prepare-commit-msg.sample
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+
+# This hook includes three examples. The first one removes the
+# "# Please enter the commit message..." help message.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+/usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+# case "$COMMIT_SOURCE,$SHA1" in
+#  ,|template,)
+#    /usr/bin/perl -i.bak -pe '
+#       print "\n" . `git diff --cached --name-status -r`
+# 	 if /^#/ && $first++ == 0' "$COMMIT_MSG_FILE" ;;
+#  *) ;;
+# esac
+
+# SOB=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# git interpret-trailers --in-place --trailer "$SOB" "$COMMIT_MSG_FILE"
+# if test -z "$COMMIT_SOURCE"
+# then
+#   /usr/bin/perl -i.bak -pe 'print "\n" if !$first_line++' "$COMMIT_MSG_FILE"
+# fi
+
+// ./.git/hooks/applypatch-msg.sample
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+commitmsg="$(git rev-parse --git-path hooks/commit-msg)"
+test -x "$commitmsg" && exec "$commitmsg" ${1+"$@"}
+:
+
+// ./textfiles/ideadForJRPG.txt
+Utility AI 
+  - Chance of enemy choosing to use special skill increases as their health decreases 
+    UseChance(gameState)
+
+
+
+
+// ./textfiles/game_guide.txt
+Character types
+    
+    Warrior – A strong melee fighter with high health and defense.
+        Attack: Slash (basic physical attack)
+        Special: Shield Block (reduces incoming damage for one turn)
+
+    Mage – A glass-cannon spellcaster with high damage but low health.
+        Attack: Fireball (magic attack)
+        Special: Arcane Surge (boosts magic damage for the next turn)
+
+    Rogue – A fast, agile attacker that can deal critical damage.
+        Attack: Dagger Strike (chance for a critical hit)
+        Special: Vanish (dodges one enemy attack)
+
+    Cleric – A healer and support character.
+        Attack: Smite (holy damage, weak attack)
+        Special: Heal (restores health to an ally)
+
+    Beastmaster – Summons creatures to fight alongside.
+        Attack: Whip Strike (melee attack)
+        Special: Summon Wolf (temporary ally that fights for a few turns)
+
+    Elementalist – Controls elements for diverse attacks.
+        Attack: Ice Spike (deals damage and slows enemy)
+        Special: Storm Call (hits multiple enemies)
+
+    Paladin – A hybrid between Warrior and Cleric.
+        Attack: Holy Blade (damage with slight healing)
+        Special: Divine Shield (grants temporary invincibility)
+
+    Dark Knight – Uses dark energy at the cost of health.
+        Attack: Shadow Slash (physical + dark damage)
+        Special: Life Drain (steals health from an enemy)
+
+    Berserker – A reckless attacker that gets stronger when injured.
+        Attack: Frenzied Strike (deals bonus damage when health is low)
+        Special: Blood Rage (boosts attack but lowers defense)
+
+    Gambler – Uses luck-based attacks.
+
+    Attack: Coin Toss (damage varies randomly)
+    Special: Jackpot (big damage if lucky, self-damage if unlucky)
+
+Possible additions to characters
+    More stats : Mana, stamina, speed, resistance
+    More abilities : Multi-target attacks, buffs, debuffs
+    Equipment system ?? : Weapons and armor that modify stats
+    Monster encounters : Unique abilities for different enemies
+
+

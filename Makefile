@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -Wall -std=c++11 -I.
+CXXFLAGS = -Wall -std=c++23 -I.
 
 SRCS = main.cpp Character.cpp UI.cpp \
        Characters/Beastmaster/Beastmaster.cpp \

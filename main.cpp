@@ -1,3 +1,4 @@
+#include "Character.h"
 #include "Characters/Beastmaster/Beastmaster.h"
 #include "Characters/Berserker/Berserker.h"
 #include "Characters/Cleric/Cleric.h"
@@ -13,9 +14,10 @@
 #include <limits>
 #include <ctime>
 #include <cstdlib>
+#include <memory>
 
 // Let player choose a Character
-Character* chooseCharacter() {
+std::unique_ptr<Character> chooseCharacter() {
     int choice = 0;
     std::cout << "Choose your character:\n";
     std::cout << "1. Beastmaster\n";
@@ -27,81 +29,84 @@ Character* chooseCharacter() {
     std::cout << "7. Paladin\n";
     std::cout << "8. Rogue\n";
     std::cout << "9. Warrior\n";
-    std::cin >> choice;
+    
+    while (!(std::cin >> choice)) {
+        std::cout << "Enter a valid number: ";
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
 
-    // Clear any leftover input
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-    Character* player = nullptr;
+    std::unique_ptr<Character> player;
     switch (choice) {
         case 1:
-            player = new Beastmaster("Player Beastmaster");
+            player = std::make_unique<Beastmaster>("Player Beastmaster");
             break;
         case 2:
-            player = new Berserker("Player Berserker");
+            player = std::make_unique<Berserker>("Player Berserker");
             break;
         case 3:
-            player = new Cleric("Player Cleric");
+            player = std::make_unique<Cleric>("Player Cleric");
             break;
         case 4:
-            player = new DarkKnight("Player Dark Knight");
+            player = std::make_unique<DarkKnight>("Player Dark Knight");
             break;
         case 5:
-            player = new Elementalist("Player Elementalist");
+            player = std::make_unique<Elementalist>("Player Elementalist");
             break;
         case 6:
-            player = new Mage("Player Mage");
+            player = std::make_unique<Mage>("Player Mage");
             break;
         case 7:
-            player = new Paladin("Player Paladin");
+            player = std::make_unique<Paladin>("Player Paladin");
             break;
         case 8:
-            player = new Rogue("Player Rogue");
+            player = std::make_unique<Rogue>("Player Rogue");
             break;
         case 9:
-            player = new Warrior("Player Warrior");
+            player = std::make_unique<Warrior>("Player Warrior");
             break;
-        default:
+        default: // This shouldnt be called, just in case
             std::cout << "Invalid selection. Defaulting to Warrior. \n";
+            player = std::make_unique<Warrior>("Player Warrior");
             break;
     }
     return player;
 }
 
 // Function to randomly choose an enemy character
-Character* randomEnemy() {
+std::unique_ptr<Character> randomEnemy() {
     int choice = std::rand() % 9 + 1; // Generates a number between 1 and 9
-    Character* enemy = nullptr;
+    std::unique_ptr<Character> enemy;
     switch (choice) {
         case 1:
-            enemy = new Beastmaster("Enemy Beastmaster");
+            enemy = std::make_unique<Beastmaster>("Enemy Beastmaster");
             break;
         case 2:
-            enemy = new Berserker("Enemy Berserker");
+            enemy = std::make_unique<Berserker>("Enemy Berserker");
             break;
         case 3:
-            enemy = new Cleric("Enemy Cleric");
+            enemy = std::make_unique<Cleric>("Enemy Cleric");
             break;
         case 4:
-            enemy = new DarkKnight("Enemy Dark Knight");
+            enemy = std::make_unique<DarkKnight>("Enemy Dark Knight");
             break;
         case 5:
-            enemy = new Elementalist("Enemy Elementalist");
+            enemy = std::make_unique<Elementalist>("Enemy Elementalist");
             break;
         case 6:
-            enemy = new Mage("Enemy Mage");
+            enemy = std::make_unique<Mage>("Enemy Mage");
             break;
         case 7:
-            enemy = new Paladin("Enemy Paladin");
+            enemy = std::make_unique<Paladin>("Enemy Paladin");
             break;
         case 8:
-            enemy = new Rogue("Enemy Rogue");
+            enemy = std::make_unique<Rogue>("Enemy Rogue");
             break;
         case 9:
-            enemy = new Warrior("Enemy Warrior");
+            enemy = std::make_unique<Warrior>("Enemy Warrior");
             break;
         default:
-            enemy = new Warrior("Enemy Warrior");
+            enemy = std::make_unique<Warrior>("Enemy Warrior");
             break;
     }
     return enemy;
@@ -112,16 +117,16 @@ int main() {
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     
     UI::clearScreen();
-    Character* player = chooseCharacter();
-    Character* enemy = randomEnemy();
+    auto player = chooseCharacter();
+    auto enemy = randomEnemy();
 
     std::cout << "\nYou chose: " << player -> getName();
     std::cout << "\nEnemy is: " << enemy -> getName() << "\n";
     std::cout << "Battle Starts! \n";
     UI::pause(1500); //1.5 sec
 
-    const int playerMaxHP = 100;
-    const int enemyMaxHP = 100;
+    const int playerMaxHP = player -> getHealth();
+    const int enemyMaxHP = enemy -> getHealth();
 
     bool playerTurn = true;
     while (player -> isAlive() && enemy -> isAlive()) {
@@ -146,7 +151,7 @@ int main() {
             }
         } else {
             std::cout << "\nEnemy turn:\n";
-            enemy -> attack(*player, playerTurn);
+            enemy -> attack(*player, false);
         }
 
         // Announce winner
@@ -163,7 +168,5 @@ int main() {
     }
 
     // Memory cleanup
-    delete player;
-    delete enemy;
     return 0;
 }
